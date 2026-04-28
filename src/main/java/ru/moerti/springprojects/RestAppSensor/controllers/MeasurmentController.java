@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/weather/measurments")
-public class MeasurmentsController {
+public class MeasurmentController {
 
 
     @PostMapping("/add")
@@ -16,7 +16,7 @@ public class MeasurmentsController {
     }
 
     @GetMapping()
-    public String getMeasurments() {
+    public List<Measuries> getMeasurments() {
         return null;
     }
 

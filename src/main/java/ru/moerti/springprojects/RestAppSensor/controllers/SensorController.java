@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/weather/sensors")
-public class SensorsController {
+public class SensorController {
 
     @PostMapping("/registration")
     public String registerSersor() {
