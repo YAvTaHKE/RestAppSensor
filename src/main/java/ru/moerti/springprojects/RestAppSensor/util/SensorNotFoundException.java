@@ -1,4 +1,4 @@
 package ru.moerti.springprojects.RestAppSensor.util;
 
-public class SensorNotFoundException {
+public class SensorNotFoundException extends RuntimeException{
 }

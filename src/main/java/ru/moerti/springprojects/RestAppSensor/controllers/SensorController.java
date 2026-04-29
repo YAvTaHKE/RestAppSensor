@@ -6,21 +6,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import ru.moerti.springprojects.RestAppSensor.dto.SensorDTO;
 import ru.moerti.springprojects.RestAppSensor.entity.Sensor;
 import ru.moerti.springprojects.RestAppSensor.services.SensorService;
-import ru.moerti.springprojects.RestAppSensor.util.SensorErrorResponce;
+import ru.moerti.springprojects.RestAppSensor.util.SensorErrorResponse;
+import ru.moerti.springprojects.RestAppSensor.util.SensorNotFoundException;
+import ru.moerti.springprojects.RestAppSensor.util.SensorNotRegistrationException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/weather/sensors")
 public class SensorController {
 
     private final ModelMapper modelMapper;
-    private SensorService sensorService;
+    private final SensorService sensorService;
 
     @Autowired
     public SensorController(SensorService sensorService, ModelMapper modelMapper) {
@@ -28,35 +30,51 @@ public class SensorController {
         this.modelMapper = modelMapper;
     }
 
+    @GetMapping
+    List<SensorDTO> getSensors(){
+        return sensorService.findAll()
+                .stream()
+                .map(this::convertToSensorDTO)
+                .toList();
+    }
+
+    @GetMapping("/{id}")
+    public SensorDTO showSensorById(@PathVariable("id") int id) {
+        return convertToSensorDTO(sensorService.findById(id));
+    }
+
     @PostMapping("/registration")
     public ResponseEntity<HttpStatus> registerSensor(@RequestBody @Valid SensorDTO sensorDTO,
                                                      BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            StringBuilder errorMsg = new StringBuilder();
-
-            List<FieldError> errors = bindingResult.getFieldErrors();
-            for (FieldError error : errors) {
-                errorMsg.append(error.getField())
-                        .append("-")
-                        .append(error.getDefaultMessage())
-                        .append(";");
-            }
-            throw new SensorNotRegistrationExceprion(errorMsg.toString());
+            String errorMsg = bindingResult.getFieldErrors().stream()
+                    .map(error -> error.getField() + "-" + error.getDefaultMessage())
+                    .collect(Collectors.joining(";"));
+            throw new SensorNotRegistrationException(errorMsg);
         }
 
-        SensorService.save(convertToSensor(SensorDTO));
+        sensorService.save(convertToSensor(sensorDTO));
 
-        return ResponseEntity.ok(HttpsStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ExceptionHandler
-    private ResponseEntity<SensorErrorResponce> handleException(SensorNotFoundExceprion exceprion) {
-        SensorErrorResponce responce = new SensorErrorResponce(
+    private ResponseEntity<SensorErrorResponse> handleException(SensorNotRegistrationException exception) {
+        SensorErrorResponse response = new SensorErrorResponse(
+                exception.getMessage(),
+                System.currentTimeMillis()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    private ResponseEntity<SensorErrorResponse> handleException(SensorNotFoundException exception) {
+        SensorErrorResponse response = new SensorErrorResponse(
                 "Sensor with this id wasn't found!",
                 System.currentTimeMillis()
         );
-        //В HTTP ответе тело ответа (responce) и статус в заголовке
-        return new ResponseEntity<>(responce, HttpStatus.BAD_REQUEST);
+        //В HTTP ответе тело ответа (response) и статус в заголовке
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     private Sensor convertToSensor(SensorDTO sensorDTO) {
