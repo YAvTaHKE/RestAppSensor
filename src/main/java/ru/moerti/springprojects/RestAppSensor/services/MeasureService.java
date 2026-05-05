@@ -2,15 +2,15 @@ package ru.moerti.springprojects.RestAppSensor.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.moerti.springprojects.RestAppSensor.controllers.MeasurmentController;
+import ru.moerti.springprojects.RestAppSensor.repositories.MeasureRepository;
 
 @Service
 public class MeasureService {
 
-    private MeasurmentController measurmentController;
+    private final MeasureRepository measureRepository;
 
     @Autowired
-    public MeasureService(MeasurmentController measurmentController) {
-        this.measurmentController = measurmentController;
+    public MeasureService(MeasureRepository measureRepository) {
+        this.measureRepository = measureRepository;
     }
 }

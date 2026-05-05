@@ -30,12 +30,13 @@ public class SensorController {
         this.modelMapper = modelMapper;
     }
 
+    //
     @GetMapping
     List<SensorDTO> getSensors(){
         return sensorService.findAll()
                 .stream()
                 .map(this::convertToSensorDTO)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -57,6 +58,9 @@ public class SensorController {
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @DeleteMapping("/{id}")
+
 
     @ExceptionHandler
     private ResponseEntity<SensorErrorResponse> handleException(SensorNotRegistrationException exception) {

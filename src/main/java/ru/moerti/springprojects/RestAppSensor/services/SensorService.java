@@ -23,6 +23,7 @@ public class SensorService {
        this.sensorRepository = sensorRepository;
     }
 
+    //Если такого сенсора нет в БД сохраняем новый
     @Transactional
     public void save(Sensor sensor) {
         Optional<Sensor> optionalSensor = sensorRepository.findByName(sensor.getName());
