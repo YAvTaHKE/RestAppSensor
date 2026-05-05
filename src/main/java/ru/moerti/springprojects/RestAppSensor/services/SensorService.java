@@ -26,10 +26,12 @@ public class SensorService {
     //Если такого сенсора нет в БД сохраняем новый
     @Transactional
     public void save(Sensor sensor) {
-        Optional<Sensor> optionalSensor = sensorRepository.findByName(sensor.getName());
-
-        sensorRepository.save(optionalSensor.orElseThrow(() ->
-                new SensorNotRegistrationException("Sensor with name "+ sensor.getName() + " already exist!")));
+        if (sensorRepository.existsByName(sensor.getName())) {
+            throw new SensorNotRegistrationException(
+                    "Sensor with name '" + sensor.getName() + "' already exists!"
+            );
+        }
+        sensorRepository.save(sensor);
     }
 
     public Sensor findById(int id) {
@@ -38,5 +40,14 @@ public class SensorService {
 
     public List<Sensor> findAll() {
         return sensorRepository.findAll();
+    }
+
+    @Transactional
+    public void delete(String name) {
+
+        Optional<Sensor> optionalSensor = sensorRepository.findByName(name);
+
+        optionalSensor.ifPresent(sensor -> sensorRepository.delete(sensor));
+       sensorRepository.delete(optionalSensor.orElseThrow(SensorNotFoundException::new));
     }
 }

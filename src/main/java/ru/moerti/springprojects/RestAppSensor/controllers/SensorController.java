@@ -59,7 +59,11 @@ public class SensorController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{name}")
+    public ResponseEntity<HttpStatus> deleteSensor(@PathVariable("name") String name) {
+        sensorService.delete(name);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 
     @ExceptionHandler
