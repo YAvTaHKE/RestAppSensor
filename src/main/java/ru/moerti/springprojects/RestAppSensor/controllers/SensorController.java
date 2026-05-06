@@ -44,6 +44,11 @@ public class SensorController {
         return convertToSensorDTO(sensorService.findById(id));
     }
 
+    @GetMapping("/name/{name}")
+    public SensorDTO showSensorByName(@PathVariable("name") String name) {
+        return convertToSensorDTO(sensorService.findByName(name));
+    }
+
     @PostMapping("/registration")
     public ResponseEntity<HttpStatus> registerSensor(@RequestBody @Valid SensorDTO sensorDTO,
                                                      BindingResult bindingResult) {
@@ -59,12 +64,17 @@ public class SensorController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping("/{name}")
-    public ResponseEntity<HttpStatus> deleteSensor(@PathVariable("name") String name) {
-        sensorService.delete(name);
+    @DeleteMapping("/name/{name}")
+    public ResponseEntity<HttpStatus> deleteByName(@PathVariable("name") String name) {
+        sensorService.deleteByName(name);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @DeleteMapping("/name/{id}")
+    public ResponseEntity<HttpStatus> deleteById(@PathVariable("id") String name) {
+        sensorService.deleteByName(name);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     @ExceptionHandler
     private ResponseEntity<SensorErrorResponse> handleException(SensorNotRegistrationException exception) {

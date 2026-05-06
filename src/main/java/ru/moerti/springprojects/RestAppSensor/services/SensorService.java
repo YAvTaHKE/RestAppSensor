@@ -23,6 +23,18 @@ public class SensorService {
        this.sensorRepository = sensorRepository;
     }
 
+     public Sensor findById(int id) {
+        return sensorRepository.findById(id).orElseThrow(SensorNotFoundException::new);
+    }
+
+    public Sensor findByName(String name) {
+        return sensorRepository.findByName(name).orElseThrow(SensorNotFoundException::new);
+    }
+
+    public List<Sensor> findAll() {
+        return sensorRepository.findAll();
+    }
+
     //Если такого сенсора нет в БД сохраняем новый
     @Transactional
     public void save(Sensor sensor) {
@@ -34,20 +46,19 @@ public class SensorService {
         sensorRepository.save(sensor);
     }
 
-    public Sensor findById(int id) {
-        return sensorRepository.findById(id).orElseThrow(SensorNotFoundException::new);
-    }
+    @Transactional
+    public void deleteByName(String name) {
 
-    public List<Sensor> findAll() {
-        return sensorRepository.findAll();
+       Optional<Sensor> optionalSensor = sensorRepository.findByName(name);
+       sensorRepository.delete(optionalSensor.orElseThrow(SensorNotFoundException::new));
     }
 
     @Transactional
-    public void delete(String name) {
+    public void deleteById(int id) {
 
-        Optional<Sensor> optionalSensor = sensorRepository.findByName(name);
-
-        optionalSensor.ifPresent(sensor -> sensorRepository.delete(sensor));
-       sensorRepository.delete(optionalSensor.orElseThrow(SensorNotFoundException::new));
+        Optional<Sensor> optionalSensor = sensorRepository.findById(id);
+        sensorRepository.delete(optionalSensor.orElseThrow(SensorNotFoundException::new));
     }
+
+
 }
