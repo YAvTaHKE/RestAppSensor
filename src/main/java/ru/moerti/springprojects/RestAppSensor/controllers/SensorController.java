@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import ru.moerti.springprojects.RestAppSensor.dto.SensorDTO;
 import ru.moerti.springprojects.RestAppSensor.entity.Sensor;
@@ -32,7 +33,7 @@ public class SensorController {
 
     //
     @GetMapping
-    List<SensorDTO> getSensors(){
+    public List<SensorDTO> getSensors(){
         return sensorService.findAll()
                 .stream()
                 .map(this::convertToSensorDTO)
@@ -50,7 +51,7 @@ public class SensorController {
     }
 
     @PostMapping("/registration")
-    public ResponseEntity<HttpStatus> registerSensor(@RequestBody @Valid SensorDTO sensorDTO,
+    public ResponseEntity<SensorDTO> registerSensor(@RequestBody @Valid SensorDTO sensorDTO,
                                                      BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             String errorMsg = bindingResult.getFieldErrors().stream()
@@ -59,9 +60,9 @@ public class SensorController {
             throw new SensorNotRegistrationException(errorMsg);
         }
 
-        sensorService.save(convertToSensor(sensorDTO));
+        Sensor savedSensor = sensorService.save(convertToSensor(sensorDTO));
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(convertToSensorDTO(savedSensor), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/name/{name}")
@@ -70,28 +71,37 @@ public class SensorController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping("/name/{id}")
-    public ResponseEntity<HttpStatus> deleteById(@PathVariable("id") String name) {
-        sensorService.deleteByName(name);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteById(@PathVariable("id") int id) {
+        sensorService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ExceptionHandler
-    private ResponseEntity<SensorErrorResponse> handleException(SensorNotRegistrationException exception) {
+    @ExceptionHandler(SensorNotRegistrationException.class)
+    private ResponseEntity<SensorErrorResponse> handleRegistrationException(SensorNotRegistrationException exception) {
         SensorErrorResponse response = new SensorErrorResponse(
                 exception.getMessage(),
                 System.currentTimeMillis()
         );
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler
-    private ResponseEntity<SensorErrorResponse> handleException(SensorNotFoundException exception) {
+    @ExceptionHandler(SensorNotFoundException.class)
+    private ResponseEntity<SensorErrorResponse> handleNotFoundException (SensorNotFoundException exception) {
         SensorErrorResponse response = new SensorErrorResponse(
-                "Sensor with this id wasn't found!",
+                exception.getMessage(),
                 System.currentTimeMillis()
         );
-        //В HTTP ответе тело ответа (response) и статус в заголовке
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    private ResponseEntity<SensorErrorResponse> handleValidationExceptions(MethodArgumentNotValidException exception) {
+        String errorMsg = exception.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+
+        SensorErrorResponse response = new SensorErrorResponse(errorMsg, System.currentTimeMillis());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 

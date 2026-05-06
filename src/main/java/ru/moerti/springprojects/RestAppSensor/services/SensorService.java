@@ -3,7 +3,6 @@ package ru.moerti.springprojects.RestAppSensor.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.moerti.springprojects.RestAppSensor.dto.SensorDTO;
 import ru.moerti.springprojects.RestAppSensor.entity.Sensor;
 import ru.moerti.springprojects.RestAppSensor.repositories.SensorRepository;
 import ru.moerti.springprojects.RestAppSensor.util.SensorNotFoundException;
@@ -16,7 +15,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class SensorService {
 
-    private SensorRepository sensorRepository;
+    private final SensorRepository sensorRepository;
 
     @Autowired
     public SensorService(SensorRepository sensorRepository) {
@@ -24,11 +23,11 @@ public class SensorService {
     }
 
      public Sensor findById(int id) {
-        return sensorRepository.findById(id).orElseThrow(SensorNotFoundException::new);
+        return sensorRepository.findById(id).orElseThrow(() -> new SensorNotFoundException("Sensor with this id " + id + " wasn't found!"));
     }
 
     public Sensor findByName(String name) {
-        return sensorRepository.findByName(name).orElseThrow(SensorNotFoundException::new);
+        return sensorRepository.findByName(name).orElseThrow(() -> new SensorNotFoundException("Sensor with name " + name + " wasn't found!"));
     }
 
     public List<Sensor> findAll() {
@@ -37,27 +36,28 @@ public class SensorService {
 
     //Если такого сенсора нет в БД сохраняем новый
     @Transactional
-    public void save(Sensor sensor) {
+    public Sensor save(Sensor sensor) {
         if (sensorRepository.existsByName(sensor.getName())) {
             throw new SensorNotRegistrationException(
                     "Sensor with name '" + sensor.getName() + "' already exists!"
             );
         }
         sensorRepository.save(sensor);
+        return sensor;
     }
 
     @Transactional
     public void deleteByName(String name) {
 
        Optional<Sensor> optionalSensor = sensorRepository.findByName(name);
-       sensorRepository.delete(optionalSensor.orElseThrow(SensorNotFoundException::new));
+       sensorRepository.delete(optionalSensor.orElseThrow(() -> new SensorNotFoundException("Sensor with name " + name + " wasn't found!")));
     }
 
     @Transactional
     public void deleteById(int id) {
 
         Optional<Sensor> optionalSensor = sensorRepository.findById(id);
-        sensorRepository.delete(optionalSensor.orElseThrow(SensorNotFoundException::new));
+        sensorRepository.delete(optionalSensor.orElseThrow(() -> new SensorNotFoundException("Sensor with this id " + id + " wasn't found!")));
     }
 
 
