@@ -14,6 +14,8 @@ import ru.moerti.springprojects.RestAppSensor.entity.Sensor;
 import ru.moerti.springprojects.RestAppSensor.services.MeasureService;
 import ru.moerti.springprojects.RestAppSensor.util.MeasureErrorResponse;
 import ru.moerti.springprojects.RestAppSensor.util.MeasureInvalidData;
+import ru.moerti.springprojects.RestAppSensor.util.SensorErrorResponse;
+import ru.moerti.springprojects.RestAppSensor.util.SensorNotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,6 +72,15 @@ public class MeasurmentController {
 
     @ExceptionHandler(MeasureInvalidData.class)
     private ResponseEntity<MeasureErrorResponse> handleDataException(MeasureInvalidData exception) {
+        MeasureErrorResponse response = new MeasureErrorResponse(
+                exception.getMessage(),
+                System.currentTimeMillis()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    private ResponseEntity<MeasureErrorResponse> handleIllegalStateException (IllegalStateException exception) {
         MeasureErrorResponse response = new MeasureErrorResponse(
                 exception.getMessage(),
                 System.currentTimeMillis()

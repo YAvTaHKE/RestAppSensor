@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.moerti.springprojects.RestAppSensor.dto.SensorDTO;
 import ru.moerti.springprojects.RestAppSensor.entity.Sensor;
 import ru.moerti.springprojects.RestAppSensor.services.SensorService;
+import ru.moerti.springprojects.RestAppSensor.util.MeasureErrorResponse;
 import ru.moerti.springprojects.RestAppSensor.util.SensorErrorResponse;
 import ru.moerti.springprojects.RestAppSensor.util.SensorNotFoundException;
 import ru.moerti.springprojects.RestAppSensor.util.SensorNotRegistrationException;
@@ -102,6 +103,15 @@ public class SensorController {
                 .collect(Collectors.joining("; "));
 
         SensorErrorResponse response = new SensorErrorResponse(errorMsg, System.currentTimeMillis());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    private ResponseEntity<SensorErrorResponse> handleIllegalStateException (IllegalStateException exception) {
+        SensorErrorResponse response = new SensorErrorResponse(
+                exception.getMessage(),
+                System.currentTimeMillis()
+        );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
