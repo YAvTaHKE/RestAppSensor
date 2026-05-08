@@ -8,6 +8,8 @@ import ru.moerti.springprojects.RestAppSensor.repositories.MeasureRepository;
 import ru.moerti.springprojects.RestAppSensor.repositories.SensorRepository;
 import ru.moerti.springprojects.RestAppSensor.util.SensorNotFoundException;
 
+import java.util.List;
+
 @Service
 @Transactional(readOnly = true)
 public class MeasureService {
@@ -33,5 +35,14 @@ public class MeasureService {
         }
 
         return measureRepository.save(measure);
+    }
+
+    public List<Measure> findAll() {
+
+        return measureRepository.findAll();
+    }
+
+    public Integer getRainyDaysCount() {
+        return null;
     }
 }

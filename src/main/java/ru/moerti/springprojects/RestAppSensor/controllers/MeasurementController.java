@@ -8,41 +8,37 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.moerti.springprojects.RestAppSensor.dto.MeasureDTO;
-import ru.moerti.springprojects.RestAppSensor.dto.SensorDTO;
 import ru.moerti.springprojects.RestAppSensor.entity.Measure;
-import ru.moerti.springprojects.RestAppSensor.entity.Sensor;
 import ru.moerti.springprojects.RestAppSensor.services.MeasureService;
 import ru.moerti.springprojects.RestAppSensor.util.MeasureErrorResponse;
 import ru.moerti.springprojects.RestAppSensor.util.MeasureInvalidData;
-import ru.moerti.springprojects.RestAppSensor.util.SensorErrorResponse;
-import ru.moerti.springprojects.RestAppSensor.util.SensorNotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/weather/measurments")
-public class MeasurmentController {
+@RequestMapping("/weather/measurements")
+public class MeasurementController {
 
     private final MeasureService measureService;
     private final ModelMapper modelMapper;
 
     @Autowired
-    public MeasurmentController(MeasureService measureService, ModelMapper modelMapper) {
+    public MeasurementController(MeasureService measureService, ModelMapper modelMapper) {
         this.measureService = measureService;
         this.modelMapper = modelMapper;
     }
 
     //Все измерения из БД
     @GetMapping()
-    public List<Measure> getMeasurments() {
-        return null;
+    public ResponseEntity<List<Measure>> getMeasurements() {
+        return new ResponseEntity<>(measureService.findAll(), HttpStatus.OK);
     }
 
     //Добавляет измерения
     @PostMapping("/add")
-    public ResponseEntity<MeasureDTO> addMeasurments(@RequestBody @Valid MeasureDTO measureDTO,
-                                                     BindingResult bindingResult) {
+    public ResponseEntity<MeasureDTO> addMeasurements(@RequestBody @Valid MeasureDTO measureDTO,
+                                                      BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             String errorMsg = bindingResult.getFieldErrors().stream()
@@ -58,8 +54,8 @@ public class MeasurmentController {
 
     //Возвращает количество дождливых дней из БД
     @GetMapping("/rainyDaysCount")
-    public String getRainyDaysCount() {
-        return null;
+    public ResponseEntity<Integer> getRainyDaysCount() {
+        return new ResponseEntity<>(measureService.getRainyDaysCount(), HttpStatus.OK);
     }
 
     private Measure convertToMeasure(MeasureDTO measureDTO) {
