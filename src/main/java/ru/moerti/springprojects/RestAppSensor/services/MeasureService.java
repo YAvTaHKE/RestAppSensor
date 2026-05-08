@@ -7,7 +7,6 @@ import ru.moerti.springprojects.RestAppSensor.entity.Measure;
 import ru.moerti.springprojects.RestAppSensor.repositories.MeasureRepository;
 import ru.moerti.springprojects.RestAppSensor.repositories.SensorRepository;
 import ru.moerti.springprojects.RestAppSensor.util.SensorNotFoundException;
-import ru.moerti.springprojects.RestAppSensor.util.SensorNotRegistrationException;
 
 @Service
 @Transactional(readOnly = true)
