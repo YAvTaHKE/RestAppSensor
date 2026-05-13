@@ -38,7 +38,7 @@ public class MeasurementController {
     }
 
     //Добавляет измерения
-    @PostMapping("/add")
+    @PostMapping()
     public ResponseEntity<MeasureDTO> addMeasurements(@RequestBody @Valid MeasureDTO measureDTO,
                                                       BindingResult bindingResult) {
 
