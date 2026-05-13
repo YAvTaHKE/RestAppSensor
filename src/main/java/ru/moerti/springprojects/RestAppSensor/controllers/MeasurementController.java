@@ -31,8 +31,10 @@ public class MeasurementController {
 
     //Все измерения из БД
     @GetMapping()
-    public ResponseEntity<List<Measure>> getMeasurements() {
-        return new ResponseEntity<>(measureService.findAll(), HttpStatus.OK);
+    public ResponseEntity<List<MeasureDTO>> getMeasurements() {
+        return new ResponseEntity<>(measureService.findAll()
+                .stream().map(this::convertToMeasureDTO)
+                .collect(Collectors.toList()), HttpStatus.OK);
     }
 
     //Добавляет измерения
@@ -54,7 +56,7 @@ public class MeasurementController {
 
     //Возвращает количество дождливых дней из БД
     @GetMapping("/rainyDaysCount")
-    public ResponseEntity<Integer> getRainyDaysCount() {
+    public ResponseEntity<Long> getRainyDaysCount() {
         return new ResponseEntity<>(measureService.getRainyDaysCount(), HttpStatus.OK);
     }
 
@@ -75,8 +77,8 @@ public class MeasurementController {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    private ResponseEntity<MeasureErrorResponse> handleIllegalStateException (IllegalStateException exception) {
+    @ExceptionHandler(IllegalArgumentException.class)
+    private ResponseEntity<MeasureErrorResponse> handleIllegalArgumentException (IllegalArgumentException exception) {
         MeasureErrorResponse response = new MeasureErrorResponse(
                 exception.getMessage(),
                 System.currentTimeMillis()

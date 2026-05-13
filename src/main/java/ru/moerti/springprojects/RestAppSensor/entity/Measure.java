@@ -32,7 +32,7 @@ public class Measure {
     @NotNull
     private LocalDateTime createdAt;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sensor_id", referencedColumnName = "id")
     private Sensor sensor;
 

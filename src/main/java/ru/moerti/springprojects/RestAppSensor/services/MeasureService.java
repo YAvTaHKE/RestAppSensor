@@ -26,11 +26,16 @@ public class MeasureService {
     @Transactional
     public Measure save(Measure measure) {
         if (measure == null) {
-            throw new IllegalStateException("Measure cannot be null");
+            throw new IllegalArgumentException("Measure cannot be null");
         }
-        if (!sensorRepository.existsByName(measure.getSensor().getName())) {
+        // Безопасная проверка
+        String sensorName = measure.getSensor() != null
+                ? measure.getSensor().getName()
+                : null;
+
+        if (sensorName == null || !sensorRepository.existsByName(sensorName)) {
             throw new SensorNotFoundException(
-                    "Sensor with name '" + measure.getSensor().getName() + "' not found!"
+                    "Sensor with name '" + sensorName + "' not found!"
             );
         }
 
@@ -42,7 +47,7 @@ public class MeasureService {
         return measureRepository.findAll();
     }
 
-    public Integer getRainyDaysCount() {
-        return null;
+    public Long getRainyDaysCount() {
+        return measureRepository.countByRainingTrue();
     }
 }
