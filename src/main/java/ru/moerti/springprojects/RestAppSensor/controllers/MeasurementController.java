@@ -3,7 +3,9 @@ package ru.moerti.springprojects.RestAppSensor.controllers;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,11 @@ import ru.moerti.springprojects.RestAppSensor.util.MeasureInvalidData;
 import ru.moerti.springprojects.RestAppSensor.util.SensorErrorResponse;
 import ru.moerti.springprojects.RestAppSensor.util.SensorNotFoundException;
 
+import org.knowm.xchart.*;
+import org.knowm.xchart.style.Styler.LegendPosition;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -157,5 +164,51 @@ public class MeasurementController {
                 System.currentTimeMillis()
         );
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    //Представление с гарфиком температур
+    @GetMapping("/chart/image/{sensorName}")
+    public ResponseEntity<byte[]> getTemperatureChartImage(@PathVariable String sensorName) throws IOException {
+        // Получаем данные температуры
+        double[] temperatures = measureService.getTemperatureDataForChart(sensorName);
+
+        if (temperatures.length == 0) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Подготовка оси X (номера измерений)
+        double[] indexes = new double[temperatures.length];
+        for (int i = 0; i < temperatures.length; i++) {
+            indexes[i] = i + 1;
+        }
+
+        // Создаем график
+        XYChart chart = new XYChartBuilder()
+                .width(900)
+                .height(500)
+                .title("Температура сенсора " + sensorName)
+                .xAxisTitle("Номер измерения")
+                .yAxisTitle("Температура (°C)")
+                .build();
+
+        // Добавляем данные
+        chart.addSeries("Температура", indexes, temperatures);
+
+        // Настройка внешнего вида
+        chart.getStyler().setMarkerSize(3);
+        chart.getStyler().setChartTitleVisible(true);
+        chart.getStyler().setLegendPosition(LegendPosition.InsideNE);
+        chart.getStyler().setPlotGridLinesVisible(true);
+        chart.getStyler().setAxisTitlesVisible(true);
+
+        // Конвертируем график в PNG
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BitmapEncoder.saveBitmap(chart, baos, BitmapEncoder.BitmapFormat.PNG);
+
+        // Отправляем как изображение
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+
+        return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
     }
 }

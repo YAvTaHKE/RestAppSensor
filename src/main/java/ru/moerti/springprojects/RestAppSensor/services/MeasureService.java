@@ -9,6 +9,7 @@ import ru.moerti.springprojects.RestAppSensor.repositories.MeasureRepository;
 import ru.moerti.springprojects.RestAppSensor.repositories.SensorRepository;
 import ru.moerti.springprojects.RestAppSensor.util.SensorNotFoundException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -82,5 +83,19 @@ public class MeasureService {
 
     public Long getRainyDaysCount() {
         return measureRepository.countByRainingTrue();
+    }
+
+    //получить данные температур
+    public double[] getTemperatureDataForChart(String sensorName) {
+        // Получаем список BigDecimal из базы данных
+        List<BigDecimal> values = measureRepository.findAllValuesBySensorName(sensorName);
+
+        double[] temperatureArray = new double[values.size()];
+
+        for (int i = 0; i < values.size(); i++) {
+            temperatureArray[i] = values.get(i).doubleValue();
+        }
+
+        return temperatureArray;
     }
 }
