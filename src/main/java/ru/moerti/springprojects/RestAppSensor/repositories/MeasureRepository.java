@@ -8,4 +8,6 @@ import ru.moerti.springprojects.RestAppSensor.entity.Measure;
 public interface MeasureRepository extends JpaRepository<Measure, Integer> {
 
     long countByRainingTrue();
+
+
 }
